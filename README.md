@@ -19,6 +19,30 @@ rozpatrzenia są trzy możliwości:
 Na końcu zademonstruj działanie algorytmów na animacjach (możesz zapisać jaki video lub
 gify)
 
+## Pierwsze podejście
+
+W moim pierwszym podejściu spróbowałem samemu napisać skrypt, który na podstawie nagrody otrzymanej
+za ruch zwiększa lub zmniejsza prawdopodobieństwo wykonania tego ruchu przy kolejnych krokach.
+To podejście miało jednak wady. Jedną z wad było zmienianie prawdopodobieństw wyłącznie na podstawie
+ostatniej nagrody, bez brania pod uwagę skutków długo trwałych.
+
+W pierwszej próbie stworzyłem skrypt, który uczy się przez wzmacnianie pozytywnych akcji.
+Niestety, metoda ta działała tylko na podstawie ostatniej nagrody
+i nie uwzględniała długoterminowych skutków.
+
+Poprawiłem to stosując strategię Epsilon-Greedy. Uczy ona zarówno z wyborów
+przynoszących natychmiastową nagrodę, jak i z eksploracji nowych.
+Dodatkowo, wprowadzono mechanizm cofania się do udanych wyborów z
+poprzedniej iteracji, jeśli aktualna próba jest mniej efektywna.
+Wraz z czasem agent mniej eksploruje, a bardziej polega na
+zdobytej wiedzy (wyższe prawdopodobieństwo udanych akcji).
+
+## Reinforcement Learning
+
+Przy drugim podejściu postanowiłem użyć biblioteki `stable_baselines3`, która umożliwia mi trenowanie
+agenta używając algorytmów takich jak PPO lub A2C. Najpierw wytrenowałem model na algorytmie
+`Proximal Policy Optimization` (PPO), a następnie na algorytmie `A2C`. Dla mojego przypadku model nauczył się szybciej oraz dokładniej na algorytmie PPO.
+
 ## Materiały
 
 1. https://www.youtube.com/watch?v=nRHjymV2PX8
