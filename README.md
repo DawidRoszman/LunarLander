@@ -18,3 +18,12 @@ rozpatrzenia są trzy możliwości:
 
 Na końcu zademonstruj działanie algorytmów na animacjach (możesz zapisać jaki video lub
 gify)
+
+## Materiały
+
+1. https://www.youtube.com/watch?v=nRHjymV2PX8
+2. https://www.geeksforgeeks.org/epsilon-greedy-algorithm-in-reinforcement-learning/
+3. https://gymnasium.farama.org/environments/box2d/lunar_lander/
+4. https://github.com/sudharsan13296/Hands-On-Reinforcement-Learning-With-Python/blob/master/11.%20Policy%20Gradients%20and%20Optimization/11.2%20Lunar%20Lander%20Using%20Policy%20Gradients.ipynb
+5. https://stable-baselines.readthedocs.io/en/master/
+6. https://stable-baselines3.readthedocs.io/en/master/guide/rl_tips.html
