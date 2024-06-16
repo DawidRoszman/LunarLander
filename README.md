@@ -51,3 +51,4 @@ agenta używając algorytmów takich jak PPO lub A2C. Najpierw wytrenowałem mod
 4. https://github.com/sudharsan13296/Hands-On-Reinforcement-Learning-With-Python/blob/master/11.%20Policy%20Gradients%20and%20Optimization/11.2%20Lunar%20Lander%20Using%20Policy%20Gradients.ipynb
 5. https://stable-baselines.readthedocs.io/en/master/
 6. https://stable-baselines3.readthedocs.io/en/master/guide/rl_tips.html
+7. https://codecrucks.com/mamdani-fuzzy-inference-method-example/
