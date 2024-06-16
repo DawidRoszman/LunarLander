@@ -40,8 +40,15 @@ zdobytej wiedzy (wyższe prawdopodobieństwo udanych akcji).
 ## Reinforcement Learning
 
 Przy drugim podejściu postanowiłem użyć biblioteki `stable_baselines3`, która umożliwia mi trenowanie
-agenta używając algorytmów takich jak PPO lub A2C. Najpierw wytrenowałem model na algorytmie
-`Proximal Policy Optimization` (PPO), a następnie na algorytmie `A2C`. Dla mojego przypadku model nauczył się szybciej oraz dokładniej na algorytmie PPO.
+agenta używając algorytmów takich jak PPO lub A2C. Najpierw wytrenowałem model na algorytmie `A2C`.
+Przy tym modelu rakiecie udawało się lądować, niestety było to wolne oraz nie zawsze kończyło się sukcesem.
+Kolejnym krokiem było wytrenowanie modelu na algorytmie `PPO`. Model ten uczył się szybciej oraz z większą
+precyzją.
+
+## Kolejne kroki
+
+Po udanym wytrenowaniu modelu na algorytmie `PPO` postanowiłem zmienić parametry środowiska, aby sprawdzić
+czy model jest w stanie nauczyć się lądować w innych warunkach. Zmieniłem m.in. grawitację, oraz dodałem wiatr. Obecnemu modelowi czasami udaje się lądować, jednak nie jest to zbyt skuteczne. Postanowiłem go dotrenować na nowych warunkach. Trenowałem ten sam model zmieniająć parametry środowiska. Po całkiem długim uczeniu model zaczął lądować w nowych warunkach. Obecnie model jest w stanie lądować w różnych warunkach (nawet ekstremalnych).
 
 ## Materiały
 
