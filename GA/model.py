@@ -1,18 +1,15 @@
+import tensorflow.keras
 from keras.models import Sequential
 from keras.layers import Dense
 import numpy as np
 import gymnasium as gym
+import Box2D
+import random
 from deap import base, creator, tools, algorithms
 import pickle
 
-env = gym.make("LunarLanderContinuous-v2")
-env.reset()
-in_dimen = env.observation_space.shape[0]
-out_dimen = env.action_space.shape[0]
-print(in_dimen, out_dimen)
 
-
-def model_build(in_dimen=in_dimen, out_dimen=out_dimen):
+def model_build(in_dimen, out_dimen):
     model = Sequential()
     model.add(Dense(32, input_dim=in_dimen, activation="relu"))
     model.add(Dense(16, activation="relu"))
@@ -64,61 +61,43 @@ def model_weights_as_matrix(model, weights_vector):
     return weights_matrix
 
 
-def evaluate(individual, award=0):
-    env.reset()
-    obs1 = env.reset()
-    obs1 = obs1[0]
-    model = model_build()
-    model.set_weights(model_weights_as_matrix(model, individual))
-    done = False
-    step = 0
-    while (done == False) and (step <= 1000):
-        obs2 = np.expand_dims(obs1, axis=0)
-        selected_move1 = model.predict(obs2)
-        print(selected_move1)
-        obs2, reward, done, info, _ = env.step(selected_move1[0])
-        print(obs2)
-        award += float(reward)
-        step = step + 1
-        obs1 = obs2
-    return (award,)
-
-
-model = model_build()
+award = 0
+env = gym.make("LunarLanderContinuous-v2")
+env = env
+env.reset()
+in_dimen = env.observation_space.shape[0]
+out_dimen = env.action_space.shape[0]
+obs1 = env.reset()
+model = model_build(in_dimen, out_dimen)
 ind_size = model.count_params()
-print(ind_size)
-print(model.summary())
+
 
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
-toolbox = base.Toolbox()
-toolbox.register("weight_bin", np.random.uniform, -1, 1)
-toolbox.register(
-    "individual", tools.initRepeat, creator.Individual, toolbox.weight_bin, n=ind_size
-)
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+with open("lunarlander_model.pkl", "rb") as file:
+    best = pickle.load(file)
 
 
-toolbox.register("mate", tools.cxTwoPoint)
-toolbox.register("mutate", tools.mutFlipBit, indpb=0.01)
-toolbox.register("select", tools.selTournament, tournsize=3)
-toolbox.register("evaluate", evaluate)
+best_weight = model_weights_as_matrix(model, best)
 
+model.set_weights(best_weight)
 
-stats = tools.Statistics(lambda ind: ind.fitness.values)
-stats.register("Mean", np.mean)
-stats.register("Max", np.max)
-stats.register("Min", np.min)
-
-
-pop = toolbox.population(n=100)
-hof = tools.HallOfFame(1)
-
-
-pop, log = algorithms.eaSimple(
-    pop, toolbox, cxpb=0.8, mutpb=0.2, ngen=30, halloffame=hof, stats=stats
-)
-
-
-with open("lunarlander_model.pkl", "wb") as cp_file:
-    pickle.dump(hof.items[0], cp_file)
+for i in range(100):
+    award = 0
+    env = gym.make("LunarLanderContinuous-v2", render_mode="human")
+    env = env
+    env.reset()
+    obs1 = env.reset()
+    obs1 = obs1[0]
+    done = False
+    step = 0
+    while (done == False) and (step <= 1000):
+        env.render()
+        obs2 = np.expand_dims(obs1, axis=0)
+        selected_move1 = model.predict(obs2)
+        obs1, reward, done, info, _ = env.step(selected_move1[0])
+        award += reward
+        step = step + 1
+    print("Total award for", i, "is", award)
+    env.close()
