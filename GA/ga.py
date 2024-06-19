@@ -17,10 +17,8 @@ def model_build(in_dimen=in_dimen, out_dimen=out_dimen):
     model.add(Dense(32, input_dim=in_dimen, activation="relu"))
     model.add(Dense(16, activation="relu"))
     model.add(Dense(8, activation="sigmoid"))
-    model.add(Dense(out_dimen, activation="softmax"))
-    model.compile(
-        loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"]
-    )
+    model.add(Dense(out_dimen))
+    model.compile(loss="mse", optimizer="adam", metrics=["accuracy"])
     return model
 
 
@@ -111,12 +109,12 @@ stats.register("Max", np.max)
 stats.register("Min", np.min)
 
 
-pop = toolbox.population(n=100)
+pop = toolbox.population(n=20)
 hof = tools.HallOfFame(1)
 
 
 pop, log = algorithms.eaSimple(
-    pop, toolbox, cxpb=0.8, mutpb=0.2, ngen=30, halloffame=hof, stats=stats
+    pop, toolbox, cxpb=0.8, mutpb=0.2, ngen=1, halloffame=hof, stats=stats, verbose=True
 )
 
 
