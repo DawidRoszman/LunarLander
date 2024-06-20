@@ -50,6 +50,10 @@ precyzją.
 Po udanym wytrenowaniu modelu na algorytmie `PPO` postanowiłem zmienić parametry środowiska, aby sprawdzić
 czy model jest w stanie nauczyć się lądować w innych warunkach. Zmieniłem m.in. grawitację, oraz dodałem wiatr. Obecnemu modelowi czasami udaje się lądować, jednak nie jest to zbyt skuteczne. Postanowiłem go dotrenować na nowych warunkach. Trenowałem ten sam model zmieniająć parametry środowiska. Po całkiem długim uczeniu model zaczął lądować w nowych warunkach. Obecnie model jest w stanie lądować w różnych warunkach (nawet ekstremalnych).
 
+## Genetic Algorithm
+
+Kolejną próbą jaką podjąłem było użycie algorytmu genetycznego. W tym przypadku zaimplementowałem algorytm genetyczny, który wybierał najlepsze osobniki z populacji oraz mutował je.
+
 ## Materiały
 
 1. https://www.youtube.com/watch?v=nRHjymV2PX8

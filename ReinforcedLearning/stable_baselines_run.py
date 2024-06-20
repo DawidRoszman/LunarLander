@@ -2,7 +2,7 @@ from stable_baselines3 import PPO, A2C
 import gymnasium
 
 env = gymnasium.make(
-    "LunarLander-v2", render_mode="human", enable_wind=True, gravity=-10, wind_power=15
+    "LunarLander-v2", render_mode="human", enable_wind=True, gravity=-10, wind_power=10
 )
 # model = PPO.load("PPO_lunar", env=env)
 model = PPO.load("PPO_lunar", env=env)

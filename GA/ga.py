@@ -1,122 +1,105 @@
-from keras.models import Sequential
-from keras.layers import Dense
-import numpy as np
 import gymnasium as gym
-from deap import base, creator, tools, algorithms
+import pygad
 import pickle
 
-env = gym.make("LunarLanderContinuous-v2")
+# Define the Lunar Lander environment
+env = gym.make("LunarLander-v2")
+
+# Define action space (0: do nothing, 1: left orientation engine, 2: main engine, 3: right orientation engine)
+ACTIONS = [0, 1, 2, 3]
+ACTION_SPACE = len(ACTIONS)
+
+# Maximum number of moves allowed
+MAX_MOVES_ALLOWED = 200
+
+
+# Define the fitness function
+def fitness_func(model, solution, solution_idx):
+    observation = env.reset()
+    total_reward = 0
+    for step in solution:
+        step = int(step)  # Ensure the step is an integer
+        observation, reward, terminated, truncated, info = env.step(step)
+
+        # Punish for too fast velocity
+        if observation[3] > 0.4:
+            total_reward -= 50
+
+        # Punish for too much tilt
+        if abs(observation[4]) > 0.5:
+            total_reward -= 30
+
+        total_reward += float(reward)
+        if terminated or truncated:
+            break
+    return total_reward
+
+
+# Number of chromosomes in a population
+sol_per_pop = 100
+# Number of genes in the chromosome (number of moves)
+num_genes = MAX_MOVES_ALLOWED
+# Number of parents to participate in further mating (about 50%)
+num_parents_mating = 50
+# Number of generations
+num_generations = 300
+# Number of parents to keep (a few percent)
+keep_parents = 10
+
+# Parent selection type
+parent_selection_type = "sss"
+
+# What type of chromosome crossover (single-point / two-point etc.)
+crossover_type = "single_point"
+
+# Percentage of genes affected by mutation
+mutation_type = "swap"
+mutation_percent_genes = "default"
+
+# Initializing the genetic algorithm
+ga_instance = pygad.GA(
+    gene_space=ACTIONS,
+    num_generations=num_generations,
+    num_parents_mating=num_parents_mating,
+    fitness_func=fitness_func,
+    sol_per_pop=sol_per_pop,
+    num_genes=num_genes,
+    parent_selection_type=parent_selection_type,
+    keep_parents=keep_parents,
+    crossover_type=crossover_type,
+    mutation_type=mutation_type,
+    mutation_percent_genes=mutation_percent_genes,
+)
+
+# Running the genetic algorithm
+ga_instance.run()
+
+# Displaying the summary of the best solution found
+solution, solution_fitness, solution_idx = ga_instance.best_solution()
+print(f"Parameters of the best solution: {solution}")
+print(f"Fitness value of the best solution = {solution_fitness}")
+
+# Save the solution to a file
+with open("best_solution_lunar_lander.pkl", "wb") as f:
+    pickle.dump(solution, f)
+
+# Plotting the fitness over generations
+ga_instance.plot_fitness(save_dir="fitness_plot_lunar_lander")
+
+# Visualizing the best solution
+env = gym.make(
+    "LunarLander-v2", render_mode="human"
+)  # Enable human mode for visualization
 env.reset()
-in_dimen = env.observation_space.shape[0]
-out_dimen = env.action_space.shape[0]
-print(in_dimen, out_dimen)
+env.render()
 
+for step in solution:
+    observation, reward, terminated, truncated, info = env.step(
+        int(step)
+    )  # Ensure the step is an integer
+    env.render()
 
-def model_build(in_dimen=in_dimen, out_dimen=out_dimen):
-    model = Sequential()
-    model.add(Dense(32, input_dim=in_dimen, activation="relu"))
-    model.add(Dense(16, activation="relu"))
-    model.add(Dense(8, activation="sigmoid"))
-    model.add(Dense(out_dimen))
-    model.compile(loss="mse", optimizer="adam", metrics=["accuracy"])
-    return model
+    if terminated or truncated:
+        break  # Stop rendering if episode terminates
 
-
-def model_weights_as_vector(model):
-    weights_vector = []
-
-    for layer in model.layers:
-        if layer.trainable:
-            layer_weights = layer.get_weights()
-            for l_weights in layer_weights:
-                vector = np.reshape(l_weights, newshape=(l_weights.size))
-                weights_vector.extend(vector)
-
-    return np.array(weights_vector)
-
-
-def model_weights_as_matrix(model, weights_vector):
-    weights_matrix = []
-
-    start = 0
-    for layer_idx, layer in enumerate(model.layers):
-        layer_weights = layer.get_weights()
-        if layer.trainable:
-            for l_weights in layer_weights:
-                layer_weights_shape = l_weights.shape
-                layer_weights_size = l_weights.size
-
-                layer_weights_vector = weights_vector[
-                    start : start + layer_weights_size
-                ]
-                layer_weights_matrix = np.reshape(
-                    layer_weights_vector, newshape=(layer_weights_shape)
-                )
-                weights_matrix.append(layer_weights_matrix)
-
-                start = start + layer_weights_size
-        else:
-            for l_weights in layer_weights:
-                weights_matrix.append(l_weights)
-
-    return weights_matrix
-
-
-def evaluate(individual, award=0):
-    env.reset()
-    obs1 = env.reset()
-    obs1 = obs1[0]
-    model = model_build()
-    model.set_weights(model_weights_as_matrix(model, individual))
-    done = False
-    step = 0
-    while (done == False) and (step <= 1000):
-        obs2 = np.expand_dims(obs1, axis=0)
-        selected_move1 = model.predict(obs2)
-        print(selected_move1)
-        obs2, reward, done, info, _ = env.step(selected_move1[0])
-        print(obs2)
-        award += float(reward)
-        step = step + 1
-        obs1 = obs2
-    return (award,)
-
-
-model = model_build()
-ind_size = model.count_params()
-print(ind_size)
-print(model.summary())
-
-creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMax)
-toolbox = base.Toolbox()
-toolbox.register("weight_bin", np.random.uniform, -1, 1)
-toolbox.register(
-    "individual", tools.initRepeat, creator.Individual, toolbox.weight_bin, n=ind_size
-)
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-
-
-toolbox.register("mate", tools.cxTwoPoint)
-toolbox.register("mutate", tools.mutFlipBit, indpb=0.01)
-toolbox.register("select", tools.selTournament, tournsize=3)
-toolbox.register("evaluate", evaluate)
-
-
-stats = tools.Statistics(lambda ind: ind.fitness.values)
-stats.register("Mean", np.mean)
-stats.register("Max", np.max)
-stats.register("Min", np.min)
-
-
-pop = toolbox.population(n=20)
-hof = tools.HallOfFame(1)
-
-
-pop, log = algorithms.eaSimple(
-    pop, toolbox, cxpb=0.8, mutpb=0.2, ngen=1, halloffame=hof, stats=stats, verbose=True
-)
-
-
-with open("lunarlander_model.pkl", "wb") as cp_file:
-    pickle.dump(hof.items[0], cp_file)
+env.close()
